@@ -12,4 +12,16 @@ public class ViewDashboard {
         return "index";
     }
 
+    @GetMapping("/checkin")
+    public String showAttendance() {
+        // This will load src/main/resources/templates/checkin.html (if using Thymeleaf)
+        return "checkin";
+    }
+
+    @GetMapping("/calendar")
+    public String showCalendar() {
+        // This will load src/main/resources/templates/calendar.html (if using Thymeleaf)
+        return "calendar";
+    }
+
 }
