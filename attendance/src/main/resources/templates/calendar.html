@@ -3,8 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <title>Calendar</title>
+    <style>
+        .calendar {
+            width: 300px;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .day-title {
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 5px;
+        }
+
+        .day {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .empty {
+            background: #fafafa;
+        }
+
+        .highlight {
+            background: yellow !important;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+
+<h2 id="title"></h2>
+
+<div id="dateSearchBar">
+    <input id="yearInput" type="number" placeholder="Year" style="width: 80px;">
+    <input id="monthInput" type="number" placeholder="Month" style="width: 80px;">
+    <input id="dayInput" type="number" placeholder="Day" style="width: 80px;">
+    <button onclick="searchDate()">Search</button>
+</div>
+
+<div class="calendar" id="calendar">
+    <!-- Calendar days will be inserted here -->
+</div>
+
+<button onclick="history.back()" style="
+    padding: 8px 14px;
+    margin-top: 25px;     /* added space above */
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    background: #eee;
+    cursor: pointer;
+    border-radius: 5px;
+">
+    ← Back
+</button>
+
+<script>
+    // Enable Enter key ONLY for date search inputs
+    document.getElementById("dateSearchBar").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            searchDate();
+        }
+    });
+
+    let highlightDay = null;  // store searched day
+
+    function loadCalendar(year = null, month = null) {
+        let url = '/api/dashboard/month';
+
+        if (year && month) {
+            url += `?year=${year}&month=${month}`;
+        }
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const calendar = document.getElementById('calendar');
+                const title = document.getElementById('title');
+
+                calendar.innerHTML = ""; // clear old calendar
+
+                const { year, month, daysInMonth, startDayOfWeek } = data;
+
+                const monthNames = [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ];
+
+                title.innerText = `${monthNames[month - 1]} ${year}`;
+
+                // Render week headers
+                const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                weekDays.forEach(d => {
+                    const div = document.createElement("div");
+                    div.className = "day-title";
+                    div.innerText = d;
+                    calendar.appendChild(div);
+                });
+
+                // Empty cells before 1st
+                for (let i = 1; i < startDayOfWeek; i++) {
+                    const empty = document.createElement("div");
+                    empty.className = "empty";
+                    calendar.appendChild(empty);
+                }
+
+                // Calendar days
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const div = document.createElement("div");
+                    div.className = "day";
+                    div.innerText = d;
+
+                    // Highlight searched day
+                    if (highlightDay === d) {
+                        div.classList.add("highlight");
+                    }
+
+                    calendar.appendChild(div);
+                }
+            });
+    }
+
+    function searchDate() {
+        const year = document.getElementById("yearInput").value;
+        const month = document.getElementById("monthInput").value;
+        const day = document.getElementById("dayInput").value;
+
+        if (!year || !month || !day) {
+            alert("Enter year, month and day!");
+            return;
+        }
+
+        fetch(`/api/dashboard/findDate?year=${year}&month=${month}&day=${day}`)
+            .then(res => res.json())
+            .then(data => {
+                highlightDay = data.day;  
+                loadCalendar(data.year, data.month); 
+            });
+    }
+
+    loadCalendar(); // default month on load
+</script>
+
 
 </body>
 </html>
