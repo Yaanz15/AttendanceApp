@@ -2,6 +2,7 @@ package com.vico.attendance.controller;
 
 import com.vico.attendance.entity.Staff;
 import com.vico.attendance.repository.StaffRepo;
+import com.vico.attendance.service.CalendarService;
 import com.vico.attendance.service.StaffService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,7 @@ public class ApiController {
 
     private final StaffService staffService;
     private final StaffRepo staffrepo;
+    private final CalendarService calendarService;
 
     @GetMapping("/getStaffDetail")
     public List<Staff> getStaffDetail() {
@@ -32,7 +34,7 @@ public class ApiController {
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month
     ) {
-        return staffService.getMonthCalendar(year, month);
+        return calendarService.getMonthCalendar(year, month);
     }
 
     @GetMapping("/findDate")
