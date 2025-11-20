@@ -72,7 +72,7 @@
     let highlightDay = null;  // store searched day
 
     function loadCalendar(year = null, month = null) {
-        let url = '/api/dashboard/month';
+        let url = '/api/month';
 
         if (year && month) {
             url += `?year=${year}&month=${month}`;
@@ -137,7 +137,7 @@
             return;
         }
 
-        fetch(`/api/dashboard/findDate?year=${year}&month=${month}&day=${day}`)
+        fetch(`/api/findDate?year=${year}&month=${month}&day=${day}`)
             .then(res => res.json())
             .then(data => {
                 highlightDay = data.day;  

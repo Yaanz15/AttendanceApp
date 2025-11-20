@@ -3,12 +3,11 @@ package com.vico.attendance.controller;
 import com.vico.attendance.entity.Staff;
 import com.vico.attendance.repository.StaffRepo;
 import com.vico.attendance.service.CalendarService;
+import com.vico.attendance.service.StaffCheckInService;
 import com.vico.attendance.service.StaffService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -17,12 +16,13 @@ import java.util.Map;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("api/dashboard") // starting api call
+@RequestMapping("api") // starting api call
 public class ApiController {
 
     private final StaffService staffService;
     private final StaffRepo staffrepo;
     private final CalendarService calendarService;
+    private final StaffCheckInService staffCheckInService;
 
     @GetMapping("/getStaffDetail")
     public List<Staff> getStaffDetail() {
@@ -48,6 +48,12 @@ public class ApiController {
         response.put("month", month);
         response.put("day", day); // this is the highlight day
         return response;
+    }
+
+    @PostMapping("/postStaffCheckIn")
+    public ResponseEntity<String> checkin (String name, String email, Long phone_num){
+        staffCheckInService.staffCheckIn(name, email, phone_num);
+        return ResponseEntity.ok("OK");
     }
 
 }
