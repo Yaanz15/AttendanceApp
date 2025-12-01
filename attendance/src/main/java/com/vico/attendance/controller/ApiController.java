@@ -1,6 +1,8 @@
 package com.vico.attendance.controller;
 
+import com.vico.attendance.dto.StaffCheckinDto;
 import com.vico.attendance.entity.Staff;
+import com.vico.attendance.entity.StaffCheckIn;
 import com.vico.attendance.repository.StaffRepo;
 import com.vico.attendance.service.CalendarService;
 import com.vico.attendance.service.StaffCheckInService;
@@ -51,10 +53,13 @@ public class ApiController {
     }
 
     @PostMapping("/postStaffCheckIn")
-    public ResponseEntity<String> checkin (String name, String email, Long phone_num){
-        staffCheckInService.staffCheckIn(name, email, phone_num);
-        return ResponseEntity.ok("OK");
+    public ResponseEntity<?> checkin (String name, String email, Long phone_num){
+        return staffCheckInService.staffCheckIn(name, email, phone_num);
     }
 
+    @GetMapping("/getStaffCheckIn")
+    public ResponseEntity<List<StaffCheckinDto>> getStaffCheckInRecords(){
+        return ResponseEntity.ok(staffCheckInService.displayCheckInRecord());
+    }
 }
 
