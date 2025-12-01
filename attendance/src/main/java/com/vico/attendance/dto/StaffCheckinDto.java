@@ -1,29 +1,19 @@
-package com.vico.attendance.entity;
+package com.vico.attendance.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-@Entity
-@Data
-@Setter
 @Getter
-@Table(name="staffcheckin")
-
-public class StaffCheckIn {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@Setter
+@AllArgsConstructor
+public class StaffCheckinDto {
     private String name;
     private String email;
     private Long phone_num;
     private LocalDate checkin_date;
     private LocalTime checkin_time;
-
 }
