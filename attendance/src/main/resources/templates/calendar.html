@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .calendar {
-            width: 300px;
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
@@ -20,8 +24,9 @@
         }
 
         .day {
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
+            background: white;
         }
 
         .empty {
@@ -34,49 +39,69 @@
         }
     </style>
 </head>
-<body>
 
-<h2 id="title"></h2>
+<body style="background-color: #9ca3af; color: #1b1b18;" class="min-h-screen">
 
-<div id="dateSearchBar">
-    <input id="yearInput" type="number" placeholder="Year" style="width: 80px;">
-    <input id="monthInput" type="number" placeholder="Month" style="width: 80px;">
-    <input id="dayInput" type="number" placeholder="Day" style="width: 80px;">
-    <button onclick="searchDate()">Search</button>
+<!-- Top Bar -->
+<header class="fixed top-0 left-0 right-0 bg-gray-800 text-white flex justify-between items-center px-6 py-4 shadow-md z-40">
+    <div class="flex items-center space-x-4">
+        <!-- Sidebar Toggle Button -->
+        <button id="openSidebar" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded">
+            ☰
+        </button>
+        <h1 class="text-xl font-semibold">Calendar</h1>
+    </div>
+
+    <!-- Right side content (optional) -->
+    <div class="flex items-center space-x-4">
+        <span class="text-sm">Welcome, Yaana</span>
+        <button class="bg-gray-500 hover:bg-gray-900 px-2 py-1 rounded">Logout</button>
+    </div>
+</header>
+
+<!-- Sidebar -->
+<aside id="sidebar"
+       class="fixed left-0 top-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="p-6 flex justify-between items-center border-b border-gray-700">
+        <h2 class="text-xl font-semibold">Menu</h2>
+        <button id="closeSidebar" class="text-white text-2xl">&times;</button>
+    </div>
+    <nav class="flex flex-col space-y-4 p-6">
+        <a href="/dashboard" class="hover:bg-gray-700 p-2 rounded">Dashboard</a>
+        <a href="/checkin" class="hover:bg-gray-700 p-2 rounded">Check In Attendance</a>
+        <a href="/calendar" class="hover:bg-gray-700 p-2 rounded">Calendar</a>
+    </nav>
+</aside>
+
+<!-- MAIN CONTENT WRAPPER -->
+<div class="pt-24 px-4"> <!-- Adds margin so content drops below header -->
+
+    <h2 id="title" class="text-2xl font-bold text-center mb-4"></h2>
+
+    <!-- Search Bar -->
+    <div class="flex justify-center space-x-2 mb-4">
+        <input id="yearInput" type="number" placeholder="Year" class="border px-2 py-1 w-24">
+        <input id="monthInput" type="number" placeholder="Month" class="border px-2 py-1 w-24">
+        <input id="dayInput" type="number" placeholder="Day" class="border px-2 py-1 w-24">
+        <button onclick="searchDate()" class="bg-blue-600 text-white px-3 py-1 rounded">Search</button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar" id="calendar"></div>
+
 </div>
-
-<div class="calendar" id="calendar">
-    <!-- Calendar days will be inserted here -->
-</div>
-
-<button onclick="history.back()" style="
-    padding: 8px 14px;
-    margin-top: 25px;     /* added space above */
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    background: #eee;
-    cursor: pointer;
-    border-radius: 5px;
-">
-    ← Back
-</button>
 
 <script>
-    // Enable Enter key ONLY for date search inputs
-    document.getElementById("dateSearchBar").addEventListener("keydown", function(e) {
-        if (e.key === "Enter") {
-            searchDate();
-        }
+    // Enable Enter key for search inputs
+    document.getElementById("dateSearchBar")?.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") searchDate();
     });
 
-    let highlightDay = null;  // store searched day
+    let highlightDay = null;
 
     function loadCalendar(year = null, month = null) {
         let url = '/api/month';
-
-        if (year && month) {
-            url += `?year=${year}&month=${month}`;
-        }
+        if (year && month) url += `?year=${year}&month=${month}`;
 
         fetch(url)
             .then(res => res.json())
@@ -84,43 +109,39 @@
                 const calendar = document.getElementById('calendar');
                 const title = document.getElementById('title');
 
-                calendar.innerHTML = ""; // clear old calendar
+                calendar.innerHTML = "";
 
                 const { year, month, daysInMonth, startDayOfWeek } = data;
 
                 const monthNames = [
-                    "January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"
+                    "January","February","March","April","May","June",
+                    "July","August","September","October","November","December"
                 ];
 
                 title.innerText = `${monthNames[month - 1]} ${year}`;
 
-                // Render week headers
-                const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                weekDays.forEach(d => {
+                // Day titles
+                ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(d => {
                     const div = document.createElement("div");
                     div.className = "day-title";
                     div.innerText = d;
                     calendar.appendChild(div);
                 });
 
-                // Empty cells before 1st
+                // Empty slots
                 for (let i = 1; i < startDayOfWeek; i++) {
-                    const empty = document.createElement("div");
+                    let empty = document.createElement("div");
                     empty.className = "empty";
                     calendar.appendChild(empty);
                 }
 
-                // Calendar days
+                // Days
                 for (let d = 1; d <= daysInMonth; d++) {
                     const div = document.createElement("div");
                     div.className = "day";
                     div.innerText = d;
 
-                    // Highlight searched day
-                    if (highlightDay === d) {
-                        div.classList.add("highlight");
-                    }
+                    if (highlightDay === d) div.classList.add("highlight");
 
                     calendar.appendChild(div);
                 }
@@ -140,12 +161,26 @@
         fetch(`/api/findDate?year=${year}&month=${month}&day=${day}`)
             .then(res => res.json())
             .then(data => {
-                highlightDay = data.day;  
-                loadCalendar(data.year, data.month); 
+                highlightDay = data.day;
+                loadCalendar(data.year, data.month);
             });
     }
 
-    loadCalendar(); // default month on load
+    loadCalendar(); // Initial render
+
+     // for sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('openSidebar');
+    const closeBtn = document.getElementById('closeSidebar');
+
+    openBtn.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+    });
+
 </script>
 
 
