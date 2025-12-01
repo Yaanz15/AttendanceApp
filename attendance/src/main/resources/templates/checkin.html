@@ -3,38 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <title>Checkin Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
 
-<form id="checkinForm">
-    <div class="form-group">
-        <label for="formGroupName">Name</label>
-        <input type="text" class="form-control" id="formGroupName" placeholder="Name" required>
+<body style="background-color: #9ca3af; color: #1b1b18;" class="min-h-screen">
+
+<!-- Top Bar -->
+<header class="fixed top-0 left-0 right-0 bg-gray-800 text-white flex justify-between items-center px-6 py-4 shadow-md z-40">
+    <div class="flex items-center space-x-4">
+        <!-- Sidebar Toggle Button -->
+        <button id="openSidebar" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded">
+            ☰
+        </button>
+        <h1 class="text-xl font-semibold">Check-In Attendance</h1>
     </div>
-    <div class="form-group">
-        <label for="formGroupEmail">Email</label>
-        <input type="text" class="form-control" id="formGroupEmail" placeholder="Email" required>
+
+    <!-- Right side content (optional) -->
+    <div class="flex items-center space-x-4">
+        <span class="text-sm">Welcome, Yaana</span>
+        <button class="bg-gray-500 hover:bg-gray-900 px-2 py-1 rounded">Logout</button>
     </div>
-    <div class="form-group">
-        <label for="formGroupPhone">Phone</label>
-        <input type="text" class="form-control" id="formGroupPhone" placeholder="Phone" required>
+</header>
+
+<!-- Sidebar -->
+<aside id="sidebar"
+       class="fixed left-0 top-0 h-full w-64 bg-gray-800 text-white transform -translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="p-6 flex justify-between items-center border-b border-gray-700">
+        <h2 class="text-xl font-semibold">Menu</h2>
+        <button id="closeSidebar" class="text-white text-2xl">&times;</button>
     </div>
-    <button type="button" class="btn btn-checkin" onclick="submitForm()">Check In</button>
+    <nav class="flex flex-col space-y-4 p-6">
+        <a href="/dashboard" class="hover:bg-gray-700 p-2 rounded">Dashboard</a>
+        <a href="/checkin" class="hover:bg-gray-700 p-2 rounded">Check In Attendance</a>
+        <a href="/calendar" class="hover:bg-gray-700 p-2 rounded">Calendar</a>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="pt-20 p-8"> <!-- pt-20 pushes content below top bar -->
+
+<!-- FORM -->
+<form id="checkinForm" class="mt-20 p-4 bg-white shadow rounded max-w-xl mx-auto">
+    <div class="mb-4">
+        <label class="block font-semibold">Name</label>
+        <input type="text" id="formGroupName" class="w-full p-2 border rounded" placeholder="Name" required>
+    </div>
+
+    <div class="mb-4">
+        <label class="block font-semibold">Email</label>
+        <input type="text" id="formGroupEmail" class="w-full p-2 border rounded" placeholder="Email" required>
+    </div>
+
+    <div class="mb-4">
+        <label class="block font-semibold">Phone</label>
+        <input type="text" id="formGroupPhone" class="w-full p-2 border rounded" placeholder="Phone" required>
+    </div>
+
+    <button type="button" onclick="submitForm()"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Check In
+    </button>
 </form>
 
-<button onclick="history.back()" style="
-    padding: 8px 14px;
-    margin-top: 25px;     /* added space above */
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    background: #eee;
-    cursor: pointer;
-    border-radius: 5px;
-">
-    ← Back
-</button>
+</main>
+
+
+<!-- ✅ TABLE SECTION -->
+<div class="mt-10 p-4 max-w-3xl mx-auto bg-white shadow rounded">
+    <h2 class="text-xl font-bold mb-4">Check-In Records</h2>
+
+    <table class="min-w-full bg-gray-100 rounded overflow-hidden" id="checkinTable">
+        <thead>
+        <tr class="bg-gray-300">
+            <th class="px-4 py-2 border">Name</th>
+            <th class="px-4 py-2 border">Email</th>
+            <th class="px-4 py-2 border">Phone</th>
+            <th class="px-4 py-2 border">Time</th>
+        </tr>
+        </thead>
+        <tbody id="tableBody">
+        <!-- JS will add rows here -->
+        </tbody>
+    </table>
+</div>
+
+<!--<button onclick="history.back()" class="mt-6 ml-4 px-4 py-2 border bg-gray-200 rounded">-->
+<!--    ← Back-->
+<!--</button>-->
+
 
 <script>
+    // POST form data
     function submitForm() {
         const name = document.getElementById("formGroupName").value;
         const email = document.getElementById("formGroupEmail").value;
@@ -42,9 +102,7 @@
 
         fetch("http://localhost:8080/api/postStaffCheckIn", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
                 name: name,
                 email: email,
@@ -52,14 +110,55 @@
             })
         })
         .then(response => response.text())
-        .then(data => {
+        .then(() => {
             alert("Check-in successful!");
+            loadTable(); // Reload table
         })
         .catch(error => {
             console.error("Error:", error);
             alert("Check-in failed.");
         });
     }
+
+    // GET check-in list & fill table
+    function loadTable() {
+        fetch("http://localhost:8080/api/getStaffCheckIn")
+            .then(res => res.json())
+            .then(data => {
+                const tableBody = document.getElementById("tableBody");
+                tableBody.innerHTML = ""; // Clear old data
+
+                data.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td class="border px-4 py-2">${item.name}</td>
+                            <td class="border px-4 py-2">${item.email}</td>
+                            <td class="border px-4 py-2">${item.phone_num}</td>
+                            <td class="border px-4 py-2">${item.checkin_time}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Load table when page opens
+    document.addEventListener("DOMContentLoaded", loadTable);
+
+    // for sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('openSidebar');
+    const closeBtn = document.getElementById('closeSidebar');
+
+    openBtn.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        sidebar.classList.add('-translate-x-full');
+    });
+
 </script>
 
 </body>
