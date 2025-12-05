@@ -79,7 +79,7 @@
     <h2 id="title" class="text-2xl font-bold text-center mb-4"></h2>
 
     <!-- Search Bar -->
-    <div class="flex justify-center space-x-2 mb-4">
+    <div id="dateSearchBar" class="flex justify-center space-x-2 mb-4">
         <input id="yearInput" type="number" placeholder="Year" class="border px-2 py-1 w-24">
         <input id="monthInput" type="number" placeholder="Month" class="border px-2 py-1 w-24">
         <input id="dayInput" type="number" placeholder="Day" class="border px-2 py-1 w-24">
@@ -104,8 +104,17 @@
         if (year && month) url += `?year=${year}&month=${month}`;
 
         fetch(url)
-            .then(res => res.json())
+            .then(async res => {
+                if (!res.ok) {
+                    const errorMessage = await res.text();
+                    alert(errorMessage);
+                    return null;
+                }
+                return res.json();
+            })
             .then(data => {
+                if (!data) return;
+
                 const calendar = document.getElementById('calendar');
                 const title = document.getElementById('title');
 
@@ -145,8 +154,13 @@
 
                     calendar.appendChild(div);
                 }
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("Unexpected error occurred.");
             });
     }
+
 
     function searchDate() {
         const year = document.getElementById("yearInput").value;
@@ -159,10 +173,23 @@
         }
 
         fetch(`/api/findDate?year=${year}&month=${month}&day=${day}`)
-            .then(res => res.json())
+            .then(async res => {
+            if (!res.ok) {
+                const errorMessage = await res.text();
+                alert(errorMessage);
+                return null;
+            }
+            return res.json();
+            })
             .then(data => {
+                if (!data) return;
+
                 highlightDay = data.day;
                 loadCalendar(data.year, data.month);
+            })
+            .catch(err => {
+                console.error("Error:", err);
+                alert("Unexpected error occurred.");
             });
     }
 
