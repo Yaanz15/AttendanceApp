@@ -8,9 +8,11 @@ import com.vico.attendance.service.CalendarService;
 import com.vico.attendance.service.StaffCheckInService;
 import com.vico.attendance.service.StaffService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 @AllArgsConstructor
 @RestController
+@Slf4j
 @RequestMapping("api") // starting api call
 public class ApiController {
 
@@ -32,24 +35,49 @@ public class ApiController {
     }
 
     @GetMapping("/month")
-    public Map<String, Object> getMonthCalendar(
+    public ResponseEntity<?> getMonthCalendar(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month
     ) {
-        return calendarService.getMonthCalendar(year, month);
+        try {
+            Map<String, Object> dateResult = calendarService.getMonthCalendar(year, month);
+            return ResponseEntity.ok(dateResult);
+
+        } catch (DateTimeException e) {
+            log.error("Error while calling service to process date : {}", e.getMessage(), e);
+
+            return ResponseEntity
+                    .badRequest()
+                    .body("Invalid year, month or day value with message :" + e.getMessage());
+        }
     }
 
     @GetMapping("/findDate")
-    public Map<String, Object> findDate(
+    public ResponseEntity<?> findDate(
             @RequestParam int year,
             @RequestParam int month,
             @RequestParam int day
     ) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("year", year);
-        response.put("month", month);
-        response.put("day", day); // this is the highlight day
-        return response;
+        try {
+
+            if (year < 1000 || year > 9999) {
+                log.error("Bad input detected in year value");
+                return ResponseEntity
+                        .badRequest()
+                        .body("Invalid year format: must be a 4-digit year");
+            }
+
+            LocalDate.of(year, month, day);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("year", year);
+            response.put("month", month);
+            response.put("day", day); // this is the highlight day
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Bad input detected, returning message : {} ", e.getMessage());
+            return ResponseEntity.badRequest().body("Invalid date value : " + e.getMessage());
+        }
     }
 
     @PostMapping("/postStaffCheckIn")

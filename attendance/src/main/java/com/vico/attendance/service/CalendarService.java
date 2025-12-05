@@ -1,6 +1,7 @@
 package com.vico.attendance.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -9,26 +10,32 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class CalendarService {
 
     public Map<String, Object> getMonthCalendar(Integer year, Integer month) {
 
-        LocalDate today = LocalDate.now();
+        try {
+            LocalDate today = LocalDate.now();
 
-        int y = (year != null) ? year : today.getYear();
-        int m = (month != null) ? month : today.getMonthValue();
+            int y = (year != null) ? year : today.getYear();
+            int m = (month != null) ? month : today.getMonthValue();
 
-        LocalDate firstDay = LocalDate.of(y, m, 1);
-        int lengthOfMonth = firstDay.lengthOfMonth();
-        int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // 1 = Monday, 7 = Sunday
+            LocalDate firstDay = LocalDate.of(y, m, 1);
+            int lengthOfMonth = firstDay.lengthOfMonth();
+            int startDayOfWeek = firstDay.getDayOfWeek().getValue(); // 1 = Monday, 7 = Sunday
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("year", y);
-        data.put("month", m);
-        data.put("daysInMonth", lengthOfMonth);
-        data.put("startDayOfWeek", startDayOfWeek);
+            Map<String, Object> data = new HashMap<>();
+            data.put("year", y);
+            data.put("month", m);
+            data.put("daysInMonth", lengthOfMonth);
+            data.put("startDayOfWeek", startDayOfWeek);
 
-        return data;
+            return data;
+        } catch (Exception e) {
+            log.error("Error while processing date : {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
 }
