@@ -34,6 +34,11 @@ public class ApiController {
         return staffrepo.findAll();
     }
 
+    @GetMapping("/getStaffName")
+    public String getStaffName() {
+        return staffService.getOneStaffName();
+    }
+
     @GetMapping("/month")
     public ResponseEntity<?> getMonthCalendar(
             @RequestParam(required = false) Integer year,
