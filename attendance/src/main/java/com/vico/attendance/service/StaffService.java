@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,4 +19,9 @@ public class StaffService {
 
     private final StaffRepo staffrepo;
 
+    public String getOneStaffName() {
+
+        List<String> listOfStaffNames = staffrepo.getStaffNameRepo();
+        return listOfStaffNames.getFirst();
+    }
 }

@@ -20,7 +20,7 @@
 
     <!-- Right side content (optional) -->
     <div class="flex items-center space-x-4">
-        <span class="text-sm">Welcome, Yaana</span>
+        <span id="welcomeName" class="text-sm">Welcome,</span>
         <button class="bg-gray-500 hover:bg-gray-900 px-2 py-1 rounded">Logout</button>
     </div>
 </header>
@@ -41,7 +41,7 @@
 
 <!-- Main Content -->
 <main class="pt-20 p-8"> <!-- pt-20 pushes content below top bar -->
-    <h2 class="text-2xl font-bold mb-4">Hi, Yaana !</h2>
+    <h2 id="staffName" class="text-2xl font-bold mb-4">Hi!</h2>
 <!--    <p>This is the dashboard.</p>-->
 
     <!-- Student Information Card -->
@@ -60,7 +60,7 @@
 
         <!-- Profile Image -->
         <div class="flex flex-col items-center">
-            <img src="https://via.placeholder.com/150"
+            <img src="/images/staff/20260110_195518.jpg"
                  alt="Profile"
                  class="w-32 h-32 rounded-full object-cover border-4 border-gray-200">
             <p class="text-sm text-gray-500 mt-2">Click to view full size</p>
@@ -112,6 +112,21 @@
     closeBtn.addEventListener('click', () => {
         sidebar.classList.add('-translate-x-full');
     });
+</script>
+
+<script>
+    fetch('api/getStaffName')
+    .then(response => response.text())
+    .then(name => {
+        const displayName = name || "Guest";
+
+        document.getElementById('staffName').textContent = `Hi, ${displayName} !`;
+        document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
+    })
+    .catch(() => {
+        document.getElementById('staffName').textContent = `Hi!`;
+        document.getElementById('welcomeName').textContent = `Welcome`;
+    })
 </script>
 
 </body>
