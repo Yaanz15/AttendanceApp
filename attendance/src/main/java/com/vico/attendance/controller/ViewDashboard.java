@@ -24,4 +24,15 @@ public class ViewDashboard {
         return "calendar";
     }
 
+    @GetMapping("/login")
+    public String showLogin() {
+        // This will load src/main/resources/templates/calendar.html (if using Thymeleaf)
+        return "login";
+    }
+
+    @GetMapping("/")
+    public String startLoginPage(){
+        return "redirect:/login";
+    }
+
 }
