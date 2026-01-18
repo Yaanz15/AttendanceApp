@@ -20,4 +20,5 @@ public class Staff {
     private String email;
     private Long phone_num;
     private String citizenship;
+    private String profile_image;
 }

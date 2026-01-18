@@ -1,18 +1,15 @@
 package com.vico.attendance.repository;
 
-import com.vico.attendance.entity.Staff;
+import com.vico.attendance.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+public interface UserRepo extends JpaRepository<User, Long> {
 
-public interface StaffRepo extends JpaRepository<Staff, Long> {
-
-    @Query("SELECT s.name FROM Staff s WHERE s.id = :id")
+    @Query("SELECT u.name FROM User u WHERE u.userId = :id")
     String findNameById(@Param("id") Long id);
+
+    @Query("SELECT u FROM User u WHERE u.email = :email")
+    User findByEmail(String email);
 }
-
-
-
-//kosong sbb tk de interact dgn database

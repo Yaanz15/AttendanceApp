@@ -21,7 +21,7 @@
     <!-- Right side content (optional) -->
     <div class="flex items-center space-x-4">
         <span id="welcomeName" class="text-sm">Welcome,</span>
-        <button class="bg-gray-500 hover:bg-gray-900 px-2 py-1 rounded">Logout</button>
+        <button id="logoutBtn" class="bg-gray-500 hover:bg-gray-900 px-2 py-1 rounded">Logout</button>
     </div>
 </header>
 
@@ -60,10 +60,14 @@
 
         <!-- Profile Image -->
         <div class="flex flex-col items-center">
-            <img src="/images/staff/20260110_195518.jpg"
-                 alt="Profile"
-                 class="w-32 h-32 rounded-full object-cover border-4 border-gray-200">
-            <p class="text-sm text-gray-500 mt-2">Click to view full size</p>
+            <img id="profileImage" alt="Profile" class="w-32 h-32 rounded-full object-cover border-4 border-gray-200">
+            <button id="viewImageBtn" class="text-sm text-blue-500 mt-2 hover:underline">Click to view full size</button>
+        </div>
+
+        <!-- Modal -->
+        <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
+            <img id="fullImage" class="max-w-[100%] max-h-[100%] rounded-lg shadow-lg">        
+            <button id="closeModal" class="absolute top-4 right-4 text-white text-2xl">&times;</button>
         </div>
 
         <body class="bg-gray-100 p-10">
@@ -79,17 +83,26 @@
         <script>
             // Fetch staff detail from API
             fetch('/api/getStaffDetail')
-                .then(response => response.json())
-                .then(data => {
-                    // Assuming you only want to show the first record
-                    const staff = data[0];
+                .then(response => {
+                    if (response.status === 401) {
+                        // Not logged in → go back to login
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(staff => {
+                    if (!staff) return;
+
                     document.getElementById('name').textContent = staff.name;
                     document.getElementById('identity_num').textContent = staff.identity_num;
                     document.getElementById('email').textContent = staff.email;
                     document.getElementById('phone_num').textContent = staff.phone_num;
                     document.getElementById('citizenship').textContent = staff.citizenship;
                 })
-                .catch(error => console.error('Error fetching staff details:', error));
+                .catch(error => {
+                    console.error('Error fetching staff details:', error);
+                });
         </script>
 
         </body>
@@ -115,19 +128,82 @@
 </script>
 
 <script>
-    fetch('api/getStaffName')
-    .then(response => response.text())
-    .then(name => {
-        const displayName = name || "Guest";
+    function fetchUserName() {
+        fetch('/api/staffName', {
+            credentials: 'same-origin'
+        })
+            .then(res => res.text())
+            .then(name => {
+                const displayName = name || 'Guest';
 
-        document.getElementById('staffName').textContent = `Hi, ${displayName} !`;
-        document.getElementById('welcomeName').textContent = `Welcome, ${displayName}`;
-    })
-    .catch(() => {
-        document.getElementById('staffName').textContent = `Hi!`;
-        document.getElementById('welcomeName').textContent = `Welcome`;
-    })
+                document.getElementById('staffName').textContent =
+                    `Hi, ${displayName} !`;
+
+                document.getElementById('welcomeName').textContent =
+                    `Welcome, ${displayName}`;
+            });
+    }
+
+    // Auto-load name when page opens
+    fetchUserName();
 </script>
+
+<script>
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        fetch('/api/logout', {
+            method: 'POST'
+        })
+            .then(() => {
+                // Redirect after logout
+                window.location.href = '/login';
+            })
+            .catch(err => {
+                console.error('Logout failed', err);
+            });
+    });
+</script>
+
+<script>
+    fetch('/api/getStaffImage')
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            return response.text();
+        })
+        .then(imageUrl => {
+            document.getElementById('profileImage').src = imageUrl;
+        })
+        .catch(() => {
+            document.getElementById('profileImage').src = '/images/default-avatar.jpg';
+        });
+</script>
+
+<script>
+const profileImage = document.getElementById('profileImage');
+const viewBtn = document.getElementById('viewImageBtn');
+const modal = document.getElementById('imageModal');
+const fullImage = document.getElementById('fullImage');
+const closeMdl = document.getElementById('closeModal');
+
+viewBtn.addEventListener('click', () => {
+    fullImage.src = profileImage.src; // same image, full size
+    modal.classList.remove('hidden');
+});
+
+closeMdl.addEventListener('click', () => {
+    modal.classList.add('hidden');
+});
+
+// Optional: click background to close
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        modal.classList.add('hidden');
+    }
+});
+</script>
+
 
 </body>
 </html>

@@ -19,9 +19,7 @@ public class StaffService {
 
     private final StaffRepo staffrepo;
 
-    public String getOneStaffName() {
-
-        List<String> listOfStaffNames = staffrepo.getStaffNameRepo();
-        return listOfStaffNames.getFirst();
+    public String getStaffNameById(Long staffId) {
+        return staffrepo.findNameById(staffId);
     }
 }
